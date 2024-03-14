@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wshop3app-deploy
+  namespace: wshop3ns
+  labels:
+    app: wshop3
+    name: wshop3app-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: wshop3
+      name: wshop3app-po
+  template:
+    metadata:
+      name: wshop3app-po
+      labels:
+        app: wshop3
+        name: wshop3app-po
+    spec:
+      containers:
+      - name: wshop3app-container
+        image: lscr.io/linuxserver/code-server:latest
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: wshop3-cm
+        - secretRef:
+            name: wshop3-secret
+        ports:
+        - name: wshop3app-port
+          containerPort: 8443
+apiVersion: networking.k8s.io/v1 
+kind: Ingress 
+metadata: 
+  name: wshop3app-ing 
+  namespace: wshop3ns 
+  labels:
+    app: wshop3 
+    name: wshop3app-ing 
+spec: 
+  ingressClassName: nginx
+  rules:
+  - host: wshop3app-188.166.207.250.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix 
+        backend: 
+          service: 
+            name: wshop3app-svc 
+            port: 
+              number: 8443
+
+
+
+    

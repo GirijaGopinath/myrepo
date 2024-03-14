@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wshop3-cm
+  namespace: wshop3ns
+  labels:
+    app: wshop3app
+data:
+  TZ: Asia/Singapore
+  DEFAULT_WORKSPACE: /config/workspace
+  BGG_DB_USER: root
+  BGG_DB_HOST: wshop3db-svc.wshop3ns.svc.cluster.local
+  
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wshop3-secret
+  namespace: wshop3ns
+  labels:
+    app: wshop3app
+type: Opaque
+data:
+  PASSWORD: cGFzc3dvcmQ=
+  SUDO_PASSWORD: cGFzc3dvcmQ=
+  BGG_DB_PASSWORD: Y2hhbmdlaXQ=

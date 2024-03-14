@@ -1,0 +1,87 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wshop3ns
+
+---
+apiVersion: v1
+kind: ConfigMap 
+metadata: 
+  name: wshop3-cm 
+  namespace: wshop3ns 
+
+
+--- 
+apiVersion: v1 
+kind: PersistentVolumeClaim 
+metadata:
+  name: wshop3db-pvc 
+  namespace: wshop3ns 
+spec: 
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: do-block-storage
+
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wshop3db-deploy
+  namespace: wshop3ns
+  labels:
+    app: wshop3
+    name: wshop3db-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wshop3
+      name: wshop3db-po
+  template:
+    metadata:
+      name: wshop3db-po
+      labels:
+        app: wshop3
+        name: wshop3db-po
+    spec:
+      volumes:
+      - name: wshop3-vol 
+        configMap: 
+          name: wshop3-cm
+      - name: wshop3data-vol
+        persistentVolumeClaim:
+          claimName: wshop3db-pvc
+      containers:
+      - name: wshop3db-container
+        image: stackupiss/bgg-database:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: wshop3db-port
+          containerPort: 3306
+        volumeMounts:
+        - name: wshop3-vol 
+          mountPath: /opt/tmp
+          readOnly: true
+        - name: wshop3data-vol 
+          mountPath: /var/lib/mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wshop3db-svc
+  namespace: wshop3ns
+  labels:
+    app: wshop3
+    name: wshop3db-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: wshop3
+    name: wshop3db-po
+  ports:
+  - port: 3306
+    targetPort: wshop3db-port
